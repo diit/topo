@@ -1,13 +1,13 @@
 // TOPO z-index manager
 
-@function z2($layers) {
+@function topo($layers) {
 	$plane: nth($layers, 1);
-	@debug _z-parse($layers);
-	$topo: _z-parse($layers) !global;
+	@debug _topo-parse($layers);
+	$topo: _topo-parse($layers) !global;
 	@return map-get($topo, $plane);
 }
 
-@function _z-parse($layers) {
+@function _topo-parse($layers) {
 	$_return: ();
 	$index: 1;
 
@@ -17,12 +17,12 @@
 		$index: $index + 1;
 
 		@if($item == 'above') {
-			$_return: append($_return, _z-above(nth($layers, $index), $newPlane), comma);
+			$_return: append($_return, _topo-above(nth($layers, $index), $newPlane), comma);
 		}@else if($item == 'below') {
-			$_return: append($_return, _z-below(nth($layers, $index), $newPlane), comma);
+			$_return: append($_return, _topo-below(nth($layers, $index), $newPlane), comma);
 		}@else {
 			//lookup mode (No parse required)
-			@if(_z-layerExists($item)){
+			@if(_topo-layerExists($item)){
 				@return $topo;
 			}@else{
 				@warn "No z-index found in declared or dynamic map for layer `#{$layer}`. Property omitted.";
@@ -32,14 +32,14 @@
 		@debug $_return;
 	}
 
-	@return _z-sort($_return);
+	@return _topo-sort($_return);
 }
 
-@function _z-layerExists($layer) {
+@function _topo-layerExists($layer) {
   	@return map-has-key($topo, $layer);
 }
 
-@function _z-above($item, $plane) {
+@function _topo-above($item, $plane) {
 	$p1: map-get($topo, $item);
 	
 	@return (
@@ -50,7 +50,7 @@
 
 // THOUGHT: TOPO MAP NOT UPDATED SO BELOW NOT WORKING
 
-@function _z-below($item, $plane) {
+@function _topo-below($item, $plane) {
 	$p1: map-get($topo, $item);
 
 	@return (
@@ -59,28 +59,28 @@
 	);
 }
 
-@function _z-sort($map){
+@function _topo-sort($map){
 
 	$_return: ();
 
 	@each $group in $map {
 		@debug '1: ' + map-get($group, 0);
 		@debug '2: ' + map-get($topo, map-get($group, 0));
-		$_return: map-merge($_return, _z-insert(map-get($group, 1), map-get($topo, map-get($group, 0))));
+		$_return: map-merge($_return, _topo-insert(map-get($group, 1), map-get($topo, map-get($group, 0))));
 	}
 
 	@return $_return;
 }
 
-@function _z-insert($plane, $after) {
+@function _topo-insert($plane, $after) {
 	@debug $plane + ' after ' + $after;
-	$topo-list: _z-to-list($topo, keys);
+	$topo-list: _topo-to-list($topo, keys);
 	$pos: $after + 1;
-	$topo-list: _z-insert-nth($topo-list, $pos, $plane);
-	@return _z-to-map($topo-list); 
+	$topo-list: _topo-insert-nth($topo-list, $pos, $plane);
+	@return _topo-to-map($topo-list); 
 }
 
-@function _z-to-map($list){
+@function _topo-to-map($list){
 	$_return: ();
 	$index: 1;
 
@@ -92,7 +92,7 @@
 	@return $_return;
 }
 
-@function _z-to-list($value, $keep: 'both') {
+@function _topo-to-list($value, $keep: 'both') {
   $keep: if(index('keys' 'values', $keep), $keep, 'both');
 
   @if type-of($value) == map {
@@ -118,7 +118,7 @@
 
 }
 
-@function _z-insert-nth($list, $index, $value) {
+@function _topo-insert-nth($list, $index, $value) {
   $result: null;
       
   @if type-of($index) != number {
