@@ -1,0 +1,17 @@
+*STILL CONCEPTUAL*
+#topo.scss - Dynamic CSS Layers
+If you have ever touched the domain of z-index in css or come across the score of stack overflow entries pleading for help. Then you will know exactly how much time people spend trying to tinker with it. What if we could make managing your z-index layers as simple as managing your colors with sass.
+
+##What works
+* z-index: topo(hero); 					// Pre-declared heights
+* z-index: topo(logo above hero);		// Dynamic heights (ONLY ABOVE STAEMENTS)
+
+##Whats in the works
+One of the reasons z-indexes are so hated is the fact seemingly benign code aspects can have side-effects to your layers. One of the goals of this project is to take care of this - by auto-adding the required features or at the very least warning you of why your code is behaving.
+
+* z-index: topo(logo under section-1); 	//(BELOW STATEMENTS)
+
+##Install
+
+1. ``bower install diit/topo``
+2. ``@import 'bower_components/diit/topo/topo';``
