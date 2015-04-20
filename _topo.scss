@@ -1,31 +1,5 @@
 // TOPO z-index manager
 
-@function z($layer) {
-  @if _layerExists($layer) {
-  	@return map-get($topo, $layer);
-  }@else{
-  	//@warn "No z-index found in $z-layers map for `#{$layer}`. Property omitted.";
-  	@return _addLayer($layer);
-  }
-}
-
-@function z-below($layer) {
-
-}
-
-
-@function _layerExists($layer) {
-  	@return map-has-key($topo, $layer);
-}
-
-@function _addLayer($name) {
-    $topo: append($topo, $name, comma) !global;
-    //@return
-}
-
-// thoughts
-// z(below hero above buttons) => below, hero, above, buttons
-
 @function z2($layers) {
 	$plane: nth($layers, 1);
 	@debug _z-parse($layers);
@@ -44,16 +18,25 @@
 
 		@if($item == 'above') {
 			$_return: append($_return, _z-above(nth($layers, $index), $newPlane), comma);
-		}
-
-		@if($item == 'below') {
+		}@else if($item == 'below') {
 			$_return: append($_return, _z-below(nth($layers, $index), $newPlane), comma);
+		}@else {
+			//lookup mode (No parse required)
+			@if(_z-layerExists($item)){
+				@return $topo;
+			}@else{
+				@warn "No z-index found in declared or dynamic map for layer `#{$layer}`. Property omitted.";
+			}
 		}
 
 		@debug $_return;
 	}
 
 	@return _z-sort($_return);
+}
+
+@function _z-layerExists($layer) {
+  	@return map-has-key($topo, $layer);
 }
 
 @function _z-above($item, $plane) {
