@@ -2,9 +2,17 @@
 
 @function topo($layers) {
 	$plane: nth($layers, 1);
-	@debug _topo-parse($layers);
-	$topo: _topo-parse($layers) !global;
-	@return map-get($topo, $plane);
+	@if(length($layers) == 1){
+		//lookup mode (No parse required)
+		@if(_topo-layerExists($item)){
+			@return $topo;
+		}@else{
+			@warn "No z-index found in declared or dynamic map for layer `#{$item}`. Property omitted.";
+		}
+	}@else{
+		$topo: _topo-parse($layers) !global;
+	}
+	@return map-get($topo, $plane);	
 }
 
 @function _topo-parse($layers) {
@@ -20,13 +28,6 @@
 			$_return: append($_return, _topo-above(nth($layers, $index), $newPlane), comma);
 		}@else if($item == 'below') {
 			$_return: append($_return, _topo-below(nth($layers, $index), $newPlane), comma);
-		}@else {
-			//lookup mode (No parse required)
-			@if(_topo-layerExists($item)){
-				@return $topo;
-			}@else{
-				@warn "No z-index found in declared or dynamic map for layer `#{$item}`. Property omitted.";
-			}
 		}
 
 		@debug $_return;
