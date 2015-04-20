@@ -25,7 +25,7 @@
 			@if(_topo-layerExists($item)){
 				@return $topo;
 			}@else{
-				@warn "No z-index found in declared or dynamic map for layer `#{$layer}`. Property omitted.";
+				@warn "No z-index found in declared or dynamic map for layer `#{$item}`. Property omitted.";
 			}
 		}
 
