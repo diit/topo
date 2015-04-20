@@ -1,0 +1,184 @@
+// TOPO z-index manager
+
+@function z($layer) {
+  @if _layerExists($layer) {
+  	@return map-get($topo, $layer);
+  }@else{
+  	//@warn "No z-index found in $z-layers map for `#{$layer}`. Property omitted.";
+  	@return _addLayer($layer);
+  }
+}
+
+@function z-below($layer) {
+
+}
+
+
+@function _layerExists($layer) {
+  	@return map-has-key($topo, $layer);
+}
+
+@function _addLayer($name) {
+    $topo: append($topo, $name, comma) !global;
+    //@return
+}
+
+// thoughts
+// z(below hero above buttons) => below, hero, above, buttons
+
+@function z2($layers) {
+	$plane: nth($layers, 1);
+	@debug _z-parse($layers);
+	$topo: _z-parse($layers) !global;
+	@return map-get($topo, $plane);
+}
+
+@function _z-parse($layers) {
+	$_return: ();
+	$index: 1;
+
+	@each $item in $layers {
+
+		$newPlane: nth($layers, 1);
+		$index: $index + 1;
+
+		@if($item == 'above') {
+			$_return: append($_return, _z-above(nth($layers, $index), $newPlane), comma);
+		}
+
+		@if($item == 'below') {
+			$_return: append($_return, _z-below(nth($layers, $index), $newPlane), comma);
+		}
+
+		@debug $_return;
+	}
+
+	@return _z-sort($_return);
+}
+
+@function _z-above($item, $plane) {
+	$p1: map-get($topo, $item);
+	
+	@return (
+		0:#{$item}, 
+		1:#{$plane}
+	);
+}
+
+// THOUGHT: TOPO MAP NOT UPDATED SO BELOW NOT WORKING
+
+@function _z-below($item, $plane) {
+	$p1: map-get($topo, $item);
+
+	@return (
+		0:#{$plane},
+		1:#{$item}
+	);
+}
+
+@function _z-sort($map){
+
+	$_return: ();
+
+	@each $group in $map {
+		@debug '1: ' + map-get($group, 0);
+		@debug '2: ' + map-get($topo, map-get($group, 0));
+		$_return: map-merge($_return, _z-insert(map-get($group, 1), map-get($topo, map-get($group, 0))));
+	}
+
+	@return $_return;
+}
+
+@function _z-insert($plane, $after) {
+	@debug $plane + ' after ' + $after;
+	$topo-list: _z-to-list($topo, keys);
+	$pos: $after + 1;
+	$topo-list: _z-insert-nth($topo-list, $pos, $plane);
+	@return _z-to-map($topo-list); 
+}
+
+@function _z-to-map($list){
+	$_return: ();
+	$index: 1;
+
+	@each $item in $list {
+		$_return: map-merge($_return, ($item: $index));
+		$index: $index + 1;
+	}
+
+	@return $_return;
+}
+
+@function _z-to-list($value, $keep: 'both') {
+  $keep: if(index('keys' 'values', $keep), $keep, 'both');
+
+  @if type-of($value) == map {
+    $keys: ();
+    $values: ();
+    @each $key, $val in $value {
+      $keys: append($keys, $key);
+      $values: append($values, $val); 
+    }
+
+    @if $keep == 'keys' {
+      @return $keys;
+    }
+    @else if $keep == 'values' {
+      @return $values;
+    }
+    @else {
+      @return zip($keys, $values);
+    }
+  }
+
+  @return if(type-of($value) != list, ($value,), $value);
+
+}
+
+@function _z-insert-nth($list, $index, $value) {
+  $result: null;
+      
+  @if type-of($index) != number {
+    @warn "$index: #{quote($index)} is not a number for `insert-nth`.";
+  }
+
+  @else if $index < 1 {
+    @warn "List index 0 must be a non-zero integer for `insert-nth`";
+  }
+
+  @else if $index > length($list) {
+    @warn "List index is #{$index} but list is only #{length($list)} item long for `insert-nth'.";
+  }
+
+  @else {
+    $result: ();
+        
+    @for $i from 1 through length($list) {
+      @if $i == $index {
+        $result: append($result, $value);
+      }
+
+      $result: append($result, nth($list, $i));
+    }
+  }
+
+  @return $result;
+}
+
+/*
+
+ex: newPlane above hero below buttons
+
+where: buttons is above hero
+
+so that -> hero = 0, buttons = 1
+
+after: hero = 0, newPlane = 1, buttons = 2
+
+pattern: push forward
+
+psuedo code: sort into ordered list of heights (back to front)
+
+if p1 HIGHER then p2
+	then SWAP p1 and p2
+*/
