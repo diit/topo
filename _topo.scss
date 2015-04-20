@@ -4,7 +4,7 @@
 	$plane: nth($layers, 1);
 	@if(length($layers) == 1){
 		//lookup mode (No parse required)
-		@if(_topo-layerExists($item)){
+		@if(_topo-layerExists($plane)){
 			@return $topo;
 		}@else{
 			@warn "No z-index found in declared or dynamic map for layer `#{$item}`. Property omitted.";
